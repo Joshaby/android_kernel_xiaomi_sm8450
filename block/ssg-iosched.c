@@ -39,14 +39,14 @@ extern void blk_sec_stats_account_io_done(
 #define blk_sec_stats_account_io_done(rq, size, tgid, name, time) do {} while(0)
 #endif
 
-#define MAX_ASYNC_WRITE_RQS	8
+#define MAX_ASYNC_WRITE_RQS	3
 
-static const int read_expire = HZ / 2;		/* max time before a read is submitted. */
-static const int write_expire = 5 * HZ;		/* ditto for writes, these limits are SOFT! */
-static const int max_write_starvation = 2;	/* max times reads can starve a write */
-static const int congestion_threshold = 90;	/* percentage of congestion threshold */
-static const int max_tgroup_io_ratio = 50;	/* maximum service ratio for each thread group */
-static const int max_async_write_ratio = 25;	/* maximum service ratio for async write */
+static const int read_expire = 800;		/* max time before a read is submitted. */
+static const int write_expire = 16 * HZ;		/* ditto for writes, these limits are SOFT! */
+static const int max_write_starvation = 4;	/* max times reads can starve a write */
+static const int congestion_threshold = 40;	/* percentage of congestion threshold */
+static const int max_tgroup_io_ratio = 20;	/* maximum service ratio for each thread group */
+static const int max_async_write_ratio = 6;	/* maximum service ratio for async write */
 
 struct ssg_request_info {
 	pid_t tgid;
@@ -580,50 +580,58 @@ static void ssg_exit_queue(struct elevator_queue *e)
  */
 static int ssg_init_queue(struct request_queue *q, struct elevator_type *e)
 {
-	struct ssg_data *ssg;
-	struct elevator_queue *eq;
+    struct ssg_data *ssg;
+    struct elevator_queue *eq;
 
-	eq = elevator_alloc(q, e);
-	if (!eq)
-		return -ENOMEM;
+    eq = elevator_alloc(q, e);
+    if (!eq)
+        return -ENOMEM;
 
-	ssg = kzalloc_node(sizeof(*ssg), GFP_KERNEL, q->node);
-	if (!ssg) {
-		kobject_put(&eq->kobj);
-		return -ENOMEM;
-	}
-	eq->elevator_data = ssg;
+    ssg = kzalloc_node(sizeof(*ssg), GFP_KERNEL, q->node);
+    if (!ssg) {
+        kobject_put(&eq->kobj);
+        return -ENOMEM;
+    }
+    eq->elevator_data = ssg;
 
-	ssg->queue = q;
-	INIT_LIST_HEAD(&ssg->fifo_list[READ]);
-	INIT_LIST_HEAD(&ssg->fifo_list[WRITE]);
-	ssg->sort_list[READ] = RB_ROOT;
-	ssg->sort_list[WRITE] = RB_ROOT;
-	ssg->fifo_expire[READ] = read_expire;
-	ssg->fifo_expire[WRITE] = write_expire;
-	ssg->max_write_starvation = max_write_starvation;
-	ssg->front_merges = 1;
+    ssg->queue = q;
+    INIT_LIST_HEAD(&ssg->fifo_list[READ]);
+    INIT_LIST_HEAD(&ssg->fifo_list[WRITE]);
+    ssg->sort_list[READ] = RB_ROOT;
+    ssg->sort_list[WRITE] = RB_ROOT;
+    ssg->fifo_expire[READ]  = msecs_to_jiffies(400);
+    ssg->fifo_expire[WRITE] = msecs_to_jiffies(6000);
+    ssg->max_write_starvation = 4;
+    ssg->front_merges = 1;
+    blk_queue_max_hw_sectors(q, 24 * 8);
+    q->backing_dev_info->ra_pages = 24;
+    blk_queue_rq_timeout(q, 2500);
 
-	atomic_set(&ssg->allocated_rqs, 0);
-	atomic_set(&ssg->async_write_rqs, 0);
-	ssg->congestion_threshold_rqs =
-		q->nr_requests * congestion_threshold / 100U;
-	ssg->rq_info = kmalloc(q->nr_requests * sizeof(struct ssg_request_info),
-			GFP_KERNEL | __GFP_ZERO);
-	if (ZERO_OR_NULL_PTR(ssg->rq_info))
-		ssg->rq_info = NULL;
+    atomic_set(&ssg->allocated_rqs, 0);
+    atomic_set(&ssg->async_write_rqs, 0);
+    
+    ssg->congestion_threshold_rqs = q->nr_requests * congestion_threshold / 100U;
+    ssg->max_async_write_rqs = MAX_ASYNC_WRITE_RQS;
+    
+    ssg->rq_info = kmalloc(q->nr_requests * sizeof(struct ssg_request_info),
+            GFP_KERNEL | __GFP_ZERO);
+    if (ZERO_OR_NULL_PTR(ssg->rq_info))
+        ssg->rq_info = NULL;
 
-	spin_lock_init(&ssg->lock);
-	spin_lock_init(&ssg->zone_lock);
-	INIT_LIST_HEAD(&ssg->dispatch);
+    spin_lock_init(&ssg->lock);
+    spin_lock_init(&ssg->zone_lock);
+    INIT_LIST_HEAD(&ssg->dispatch);
 
-	ssg_blkcg_activate(q);
+    ssg_blkcg_activate(q);
 
-	q->elevator = eq;
+    q->elevator = eq;
 
-	blk_sec_stats_account_init(q);
-	return 0;
+    blk_sec_stats_account_init(q);
+    return 0;
 }
+
+
+
 
 static int ssg_request_merge(struct request_queue *q, struct request **rq,
 			    struct bio *bio)
