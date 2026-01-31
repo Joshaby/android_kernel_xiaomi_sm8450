@@ -42,9 +42,9 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_runtime);
  *
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
  */
-unsigned int sysctl_sched_latency			= 10000000;
+unsigned int sysctl_sched_latency			= 6000000;
 EXPORT_SYMBOL_GPL(sysctl_sched_latency);
-static unsigned int normalized_sysctl_sched_latency	= 10000000;
+static unsigned int normalized_sysctl_sched_latency	= 6000000;
 
 /*
  * The initial- and re-scaling of tunables is configurable
@@ -102,12 +102,12 @@ const_debug unsigned int sysctl_sched_migration_cost	= 500000;
 #ifdef CONFIG_SCHED_BORE
 u8   __read_mostly sched_bore                   = 1;
 u8   __read_mostly sched_burst_exclude_kthreads = 1;
-u8   __read_mostly sched_burst_smoothness_long  = 10;
-u8   __read_mostly sched_burst_smoothness_short = 8;
-u8   __read_mostly sched_burst_fork_atavistic   = 0;
-u8   __read_mostly sched_burst_penalty_offset   = 24;
-uint __read_mostly sched_burst_penalty_scale    = 1792;
-uint __read_mostly sched_burst_cache_lifetime   = 600000000;
+u8   __read_mostly sched_burst_smoothness_long  = 9;
+u8   __read_mostly sched_burst_smoothness_short = 5;
+u8   __read_mostly sched_burst_fork_atavistic   = 2;
+u8   __read_mostly sched_burst_penalty_offset   = 26;
+uint __read_mostly sched_burst_penalty_scale    = 1280;
+uint __read_mostly sched_burst_cache_lifetime   = 240000000;
 #endif // CONFIG_SCHED_BORE
 
 int sched_thermal_decay_shift;
