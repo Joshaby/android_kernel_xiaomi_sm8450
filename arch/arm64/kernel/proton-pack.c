@@ -863,19 +863,32 @@ u8 spectre_bhb_loop_affected(int scope)
 	static u8 max_bhb_k;
 
 	if (scope == SCOPE_LOCAL_CPU) {
+		static const struct midr_range spectre_bhb_k132_list[] = {
+			MIDR_ALL_VERSIONS(MIDR_CORTEX_X3),
+			MIDR_ALL_VERSIONS(MIDR_NEOVERSE_V2),
+			{},
+		};
+		static const struct midr_range spectre_bhb_k38_list[] = {
+			MIDR_ALL_VERSIONS(MIDR_CORTEX_A715),
+			MIDR_ALL_VERSIONS(MIDR_CORTEX_A720),
+			{},
+		};
 		static const struct midr_range spectre_bhb_k32_list[] = {
 			MIDR_ALL_VERSIONS(MIDR_CORTEX_A78),
 			MIDR_ALL_VERSIONS(MIDR_CORTEX_A78AE),
 			MIDR_ALL_VERSIONS(MIDR_CORTEX_A78C),
 			MIDR_ALL_VERSIONS(MIDR_CORTEX_X1),
+			MIDR_ALL_VERSIONS(MIDR_CORTEX_X1C),
 			MIDR_ALL_VERSIONS(MIDR_CORTEX_A710),
 			MIDR_ALL_VERSIONS(MIDR_CORTEX_X2),
 			MIDR_ALL_VERSIONS(MIDR_NEOVERSE_N2),
 			MIDR_ALL_VERSIONS(MIDR_NEOVERSE_V1),
+			MIDR_ALL_VERSIONS(MIDR_HISI_TSV110),
 			{},
 		};
 		static const struct midr_range spectre_bhb_k24_list[] = {
 			MIDR_ALL_VERSIONS(MIDR_CORTEX_A76),
+			MIDR_ALL_VERSIONS(MIDR_CORTEX_A76AE),
 			MIDR_ALL_VERSIONS(MIDR_CORTEX_A77),
 			MIDR_ALL_VERSIONS(MIDR_NEOVERSE_N1),
 			MIDR_ALL_VERSIONS(MIDR_QCOM_KRYO_4XX_GOLD),
@@ -891,7 +904,11 @@ u8 spectre_bhb_loop_affected(int scope)
 			{},
 		};
 
-		if (is_midr_in_range_list(read_cpuid_id(), spectre_bhb_k32_list))
+		if (is_midr_in_range_list(read_cpuid_id(), spectre_bhb_k132_list))
+			k = 132;
+		else if (is_midr_in_range_list(read_cpuid_id(), spectre_bhb_k38_list))
+			k = 38;
+		else if (is_midr_in_range_list(read_cpuid_id(), spectre_bhb_k32_list))
 			k = 32;
 		else if (is_midr_in_range_list(read_cpuid_id(), spectre_bhb_k24_list))
 			k = 24;
