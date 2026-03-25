@@ -2127,8 +2127,8 @@ FORCE:
 # information in a variable so we can use it in if_changed and friends.
 .PHONY: $(PHONY)
 
-KBUILD_CFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs
-KBUILD_AFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs
+KBUILD_CFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mcpu=cortex-a510+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs
+KBUILD_AFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mcpu=cortex-a510+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs
 
 KBUILD_CFLAGS  += $(call cc-option,-mllvm -hot-cold-split=true)
 KBUILD_CFLAGS  += $(call cc-option,-mllvm -enable-ml-inliner=release)
