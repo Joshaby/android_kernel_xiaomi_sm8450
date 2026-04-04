@@ -2130,12 +2130,10 @@ FORCE:
 KBUILD_CFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mcpu=cortex-a510+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs
 KBUILD_AFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mcpu=cortex-a510+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs
 
-# Enable MLGO optimizations for inliner
+# Enable hot cold split optimization
 KBUILD_CFLAGS  += $(call cc-option,-mllvm -hot-cold-split=true)
 
-KBUILD_CFLAGS  += $(call cc-option,-mllvm -enable-ml-inliner=release)
-KBUILD_LDFLAGS += $(call cc-option,-mllvm -enable-ml-inliner=release)
-
+# Enable MLGO optimizations for inliner
 KBUILD_CFLAGS  += -mllvm -enable-ml-inliner=release
 KBUILD_LDFLAGS += -mllvm -enable-ml-inliner=release
 
