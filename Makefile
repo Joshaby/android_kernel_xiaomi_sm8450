@@ -2130,6 +2130,37 @@ FORCE:
 KBUILD_CFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mcpu=cortex-a510+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs
 KBUILD_AFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mcpu=cortex-a510+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs
 
+# Enable MLGO optimizations for inliner
 KBUILD_CFLAGS  += $(call cc-option,-mllvm -hot-cold-split=true)
+
 KBUILD_CFLAGS  += $(call cc-option,-mllvm -enable-ml-inliner=release)
 KBUILD_LDFLAGS += $(call cc-option,-mllvm -enable-ml-inliner=release)
+
+KBUILD_CFLAGS  += -mllvm -enable-ml-inliner=release
+KBUILD_LDFLAGS += -mllvm -enable-ml-inliner=release
+
+KBUILD_CFLAGS  += -mllvm -ml-inliner-model-selector=arm64-mixed
+KBUILD_LDFLAGS += -mllvm -ml-inliner-model-selector=arm64-mixed
+
+KBUILD_CFLAGS  += -mllvm -ml-inliner-skip-policy=if-caller-not-cold
+KBUILD_LDFLAGS += -mllvm -ml-inliner-skip-policy=if-caller-not-cold
+
+ifdef CONFIG_LLVM_POLLY
+ifeq ($(call cc-option-yn, -mllvm -polly),y)
+KBUILD_CFLAGS  += -mllvm -polly \
+     -mllvm -polly-run-inliner \
+     -mllvm -polly-ast-use-context \
+     -mllvm -polly-detect-keep-going \
+     -mllvm -polly-invariant-load-hoisting \
+     -mllvm -polly-vectorizer=stripmine
+
+KBUILD_CFLAGS  += -mllvm -polly-loopfusion-greedy=1 \
+     -mllvm -polly-reschedule=1 \
+     -mllvm -polly-postopts=1 \
+     -mllvm -polly-num-threads=0 \
+     -mllvm -polly-omp-backend=LLVM \
+     -mllvm -polly-scheduling=dynamic \
+     -mllvm -polly-scheduling-chunksize=1
+else
+KBUILD_CFLAGS	+= -mllvm -polly-opt-fusion=max
+endif
