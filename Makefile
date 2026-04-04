@@ -2137,9 +2137,6 @@ KBUILD_CFLAGS  += $(call cc-option,-mllvm -hot-cold-split=true)
 KBUILD_CFLAGS  += -mllvm -enable-ml-inliner=release
 KBUILD_LDFLAGS += -mllvm -enable-ml-inliner=release
 
-KBUILD_CFLAGS  += -mllvm -ml-inliner-model-selector=arm64-mixed
-KBUILD_LDFLAGS += -mllvm -ml-inliner-model-selector=arm64-mixed
-
 KBUILD_CFLAGS  += -mllvm -ml-inliner-skip-policy=if-caller-not-cold
 KBUILD_LDFLAGS += -mllvm -ml-inliner-skip-policy=if-caller-not-cold
 
