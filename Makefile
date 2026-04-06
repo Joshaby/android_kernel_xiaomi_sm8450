@@ -2159,3 +2159,4 @@ KBUILD_CFLAGS  += -mllvm -polly-loopfusion-greedy=1 \
 else
 KBUILD_CFLAGS	+= -mllvm -polly-opt-fusion=max
 endif
+endif
