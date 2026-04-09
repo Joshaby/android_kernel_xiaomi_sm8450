@@ -1614,6 +1614,7 @@ static void qcom_glink_destroy_ept(struct rpmsg_endpoint *ept)
 	struct glink_channel *channel = to_glink_channel(ept);
 	struct qcom_glink *glink = channel->glink;
 	unsigned long flags;
+	struct rpmsg_channel_info chinfo;
 
 	spin_lock_irqsave(&channel->recv_lock, flags);
 	if (!channel->ept.cb) {
