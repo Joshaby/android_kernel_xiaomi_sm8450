@@ -1417,33 +1417,6 @@ static int set_machine_constraints(struct regulator_dev *rdev)
 	int ret = 0;
 	const struct regulator_ops *ops = rdev->desc->ops;
 
-	/*
-	 * If there is no mechanism for controlling the regulator then
-	 * flag it as always_on so we don't end up duplicating checks
-	 * for this so much.  Note that we could control the state of
-	 * a supply to control the output on a regulator that has no
-	 * direct control.
-	 */
-	if (!rdev->ena_pin && !ops->enable) {
-		if (rdev->supply_name && !rdev->supply)
-			return -EPROBE_DEFER;
-
-		if (rdev->supply)
-			rdev->constraints->always_on =
-				rdev->supply->rdev->constraints->always_on;
-		else
-			rdev->constraints->always_on = true;
-	}
-
-	/*
-	 * If we want to enable this regulator, make sure that we know the
-	 * supplying regulator.
-	 */
-	if (rdev->constraints->always_on || rdev->constraints->boot_on) {
-		if (rdev->supply_name && !rdev->supply)
-			return -EPROBE_DEFER;
-	}
-
 	ret = machine_constraints_voltage(rdev, rdev->constraints);
 	if (ret != 0)
 		return ret;
@@ -1541,9 +1514,13 @@ static int set_machine_constraints(struct regulator_dev *rdev)
 	if (rdev->constraints->always_on || rdev->constraints->boot_on) {
 		bool supply_enabled = false;
 
-		/* We have ensured a potential supply has been resolved above.
-		 *
-		 * If supplying regulator has already been enabled,
+		/* If we want to enable this regulator, make sure that we know
+		 * the supplying regulator.
+		 */
+		if (rdev->supply_name && !rdev->supply)
+			return -EPROBE_DEFER;
+
+		/* If supplying regulator has already been enabled,
 		 * it's not intended to have use_count increment
 		 * when rdev is only boot-on.
 		 */
@@ -2658,11 +2635,25 @@ static int _regulator_do_enable(struct regulator_dev *rdev)
 		/* if needed, keep a distance of off_on_delay from last time
 		 * this regulator was disabled.
 		 */
-		ktime_t end = ktime_add_us(rdev->last_off, rdev->desc->off_on_delay);
-		s64 remaining = ktime_us_delta(end, ktime_get_boottime());
+		unsigned long start_jiffy = jiffies;
+		unsigned long intended, max_delay, remaining;
 
-		if (remaining > 0)
-			_regulator_enable_delay(remaining);
+		max_delay = usecs_to_jiffies(rdev->desc->off_on_delay);
+		intended = rdev->last_off_jiffy + max_delay;
+
+		if (time_before(start_jiffy, intended)) {
+			/* calc remaining jiffies to deal with one-time
+			 * timer wrapping.
+			 * in case of multiple timer wrapping, either it can be
+			 * detected by out-of-range remaining, or it cannot be
+			 * detected and we get a penalty of
+			 * _regulator_enable_delay().
+			 */
+			remaining = intended - start_jiffy;
+			if (remaining <= max_delay)
+				_regulator_enable_delay(
+						jiffies_to_usecs(remaining));
+		}
 	}
 
 	if (rdev->ena_pin) {
@@ -2894,8 +2885,11 @@ static int _regulator_do_disable(struct regulator_dev *rdev)
 			return ret;
 	}
 
+	/* cares about last_off_jiffy only if off_on_delay is required by
+	 * device.
+	 */
 	if (rdev->desc->off_on_delay)
-		rdev->last_off = ktime_get_boottime();
+		rdev->last_off_jiffy = jiffies;
 
 	trace_regulator_disable_complete(rdev_get_name(rdev));
 

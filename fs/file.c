@@ -743,8 +743,6 @@ static inline void __range_close(struct files_struct *cur_fds, unsigned int fd,
 			continue;
 		}
 
-		filp_close(file, cur_fds);
-		cond_resched();
 		/* beyond the last fd in that table */
 		if (PTR_ERR(file) == -EINVAL)
 			return;
