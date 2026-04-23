@@ -2127,8 +2127,8 @@ FORCE:
 # information in a variable so we can use it in if_changed and friends.
 .PHONY: $(PHONY)
 
-KBUILD_CFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mcpu=cortex-a510+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mtune=cortex-a510
-KBUILD_AFLAGS += -march=armv9-a+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mcpu=cortex-a510+crypto+nosve+dotprod+fp16+bf16+i8mm+lse+rcpc+ssbs -mtune=cortex-a510
+KBUILD_CFLAGS += -march=armv9-a+crypto+nosve+dotprod -mcpu=cortex-a510 -mtune=cortex-a510
+KBUILD_AFLAGS += -march=armv9-a+crypto+nosve+dotprod -mcpu=cortex-a510 -mtune=cortex-a510
 
 # Enable hot cold split optimization
 KBUILD_CFLAGS  += $(call cc-option,-mllvm -hot-cold-split=true)
