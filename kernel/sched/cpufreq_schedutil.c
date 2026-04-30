@@ -941,3 +941,46 @@ struct cpufreq_governor *cpufreq_default_governor(void)
 #endif
 
 cpufreq_governor_init(schedutil_gov);
+
+/****** Vorpal CPUFreq Governor — GKI 5.10 helpers (v3) ******
+ *
+ * GKI 5.10 verified (from kernel source scan):
+ *   cpu_util_cfs(rq)  → EXISTS, takes struct rq* (NOT int cpu)
+ *   cpu_bw_dl(rq)     → EXISTS, takes struct rq*
+ *   sugov_effective_cpu_perf() → NOT in 5.10
+ *   get_capacity_ref_freq()    → NOT in 5.10
+ *************************************************************/
+
+/**
+ * rfx_get_util_gki510 - GKI 5.10 compatible util getter for Vorpal.
+ */
+void rfx_get_util_gki510(int cpu, unsigned long boost,
+			 unsigned long *out_util, unsigned long *out_bw_min)
+{
+	struct rq *rq = cpu_rq(cpu);
+	unsigned long util, bw_dl, max_cap;
+
+	util   = cpu_util_cfs(rq);
+	bw_dl  = cpu_bw_dl(rq);
+
+	if (boost > util)
+		util = boost;
+
+	*out_bw_min = bw_dl;
+
+	/* 25% DVFS headroom — equivalent to map_util_perf() in newer kernels */
+	util = util + (util >> 2);
+
+	max_cap = (unsigned long)arch_scale_cpu_capacity(cpu);
+	*out_util = min(util, max_cap);
+}
+EXPORT_SYMBOL_GPL(rfx_get_util_gki510);
+
+/**
+ * rfx_dl_bw_exceeded_gki510 - DL bandwidth check for Vorpal.
+ */
+bool rfx_dl_bw_exceeded_gki510(int cpu, unsigned long bw_min)
+{
+	return cpu_bw_dl(cpu_rq(cpu)) > bw_min;
+}
+EXPORT_SYMBOL_GPL(rfx_dl_bw_exceeded_gki510);
