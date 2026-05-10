@@ -141191,11 +141191,7 @@
         <parameter type-id='e4acc659' name='state' filepath='drivers/pci/pci.c' line='1753' column='1'/>
         <return type-id='95e97e5e'/>
       </function-decl>
-<<<<<<< HEAD
       <function-decl name='pci_lock_rescan_remove' mangled-name='pci_lock_rescan_remove' filepath='drivers/pci/probe.c' line='3242' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='pci_lock_rescan_remove'>
-=======
-      <function-decl name='pci_lock_rescan_remove' mangled-name='pci_lock_rescan_remove' filepath='drivers/pci/probe.c' line='3279' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='pci_lock_rescan_remove'>
->>>>>>> google-kernel/android12-5.10
         <return type-id='48b5725f'/>
       </function-decl>
       <function-decl name='pci_map_rom' mangled-name='pci_map_rom' filepath='drivers/pci/rom.c' line='136' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='pci_map_rom'>
@@ -141310,12 +141306,17 @@
         <return type-id='95e97e5e'/>
       </function-decl>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <function-decl name='pci_rescan_bus' mangled-name='pci_rescan_bus' filepath='drivers/pci/probe.c' line='3224' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='pci_rescan_bus'>
         <parameter type-id='d1feb554' name='bus' filepath='drivers/pci/probe.c' line='3224' column='1'/>
 =======
       <function-decl name='pci_rescan_bus' mangled-name='pci_rescan_bus' filepath='drivers/pci/probe.c' line='3261' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='pci_rescan_bus'>
         <parameter type-id='d1feb554' name='bus' filepath='drivers/pci/probe.c' line='3261' column='1'/>
 >>>>>>> google-kernel/android12-5.10
+=======
+      <function-decl name='pci_rescan_bus' mangled-name='pci_rescan_bus' filepath='drivers/pci/probe.c' line='3224' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='pci_rescan_bus'>
+        <parameter type-id='d1feb554' name='bus' filepath='drivers/pci/probe.c' line='3224' column='1'/>
+>>>>>>> lineage-qcom/lineage-20
         <return type-id='f0981eeb'/>
       </function-decl>
       <function-decl name='pci_reset_function' mangled-name='pci_reset_function' filepath='drivers/pci/pci.c' line='5163' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='pci_reset_function'>
